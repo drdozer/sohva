@@ -29,7 +29,7 @@ object SohvaBuild extends Build {
     scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-language:higherKinds,implicitConversions,reflectiveCalls"))
     settings(publishSettings: _*)
     settings(unidocSettings: _*)
-  ) aggregate(client, testing)
+  ) aggregate(client, testing, lucene)
 
   lazy val scalariformSettings = defaultScalariformSettings ++ Seq(
     ScalariformKeys.preferences :=
@@ -43,7 +43,7 @@ object SohvaBuild extends Build {
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
     "com.jsuereth" %% "scala-arm" % "1.3" % "test",
-    "com.typesafe.akka" %% "akka-osgi" % "2.3.0" % "test"
+    "com.typesafe.akka" %% "akka-osgi" % "2.3.2" % "test"
   )
 
   lazy val publishSettings = Seq(
@@ -101,7 +101,7 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = Seq(
     "io.spray" % "spray-client" % "1.3.1",
-    "com.typesafe.akka" %% "akka-actor" % "2.3.0" % "provided",
+    "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "provided",
     "org.gnieh" %% "diffson" % "0.2",
     "com.jsuereth" %% "scala-arm" % "1.3",
     "net.liftweb" %% "lift-json" % "2.5",
@@ -117,6 +117,28 @@ object SohvaBuild extends Build {
 
   lazy val testingDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b"
+  )
+
+  lazy val lucene = Project(id = "sohva-lucene",
+    base = file("sohva-lucene")) settings(
+      description := "Couchdb client library to build full-text search index",
+      version := "0.1.0-SNAPSHOT",
+      resourceDirectories in Compile := List(),
+      libraryDependencies ++= luceneDependencies
+    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings (
+      OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva.lucene"
+      ),
+      OsgiKeys.additionalHeaders := Map (
+        "Bundle-Name" -> "Sohva Lucene index builder"
+      ),
+      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.lucene",
+      OsgiKeys.privatePackage := Seq()
+    ) dependsOn(client)
+
+  lazy val luceneDependencies = Seq(
+    "com.typesafe.akka" %% "akka-actor" % "2.3.2" % "provided",
+    "org.apache.lucene" % "lucene-core" % "4.7.2"
   )
 
 }
